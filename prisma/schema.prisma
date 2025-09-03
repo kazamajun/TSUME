@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String        @id @default(cuid())
+  deviceId  String        @unique
+  createdAt DateTime      @default(now())
+  attempts  Attempt[]
+  sessions  GameSession[]
+}
+
+model Attempt {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  problemId   String
+  solved      Boolean
+  moves       Int
+  wrongMoves  Int
+  timeMs      Int
+  score       Int
+  createdAt   DateTime @default(now())
+  @@index([problemId, createdAt])
+  @@index([score])
+}
+
+model GameSession {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  mode        String
+  tier        String
+  solvedCount Int
+  wrongCount  Int
+  durationMs  Int
+  score       Int
+  createdAt   DateTime @default(now())
+
+  @@index([mode, tier, createdAt])
+  @@index([score])
+}

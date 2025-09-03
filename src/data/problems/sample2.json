@@ -1,0 +1,24 @@
+{
+  "id": "sample2",
+  "name": "基本連絡1（石をつなぐ）",
+  "size": 9,
+  "initial": [
+    { "x": 4, "y": 4, "color": "B" },
+    { "x": 6, "y": 4, "color": "B" },
+    { "x": 5, "y": 3, "color": "W" }
+  ],
+  "userColor": "B",
+  "goal": "connect",
+  "tags": ["基本", "連絡", "初級"],
+  "root": {
+    "next": {
+      "5,4": {
+        "message": "応手: 白が押さえる",
+        "reply": { "x": 5, "y": 5, "color": "W" },
+        "next": {
+          "5,2": { "correct": true, "message": "連絡完了。シンプル接続。" }
+        }
+      }
+    }
+  }
+}

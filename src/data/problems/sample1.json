@@ -1,0 +1,30 @@
+{
+  "id": "sample1",
+  "name": "基本殺し1（白地の眼形を奪う）",
+  "size": 9,
+  "initial": [
+    { "x": 2, "y": 2, "color": "W" },
+    { "x": 2, "y": 3, "color": "W" },
+    { "x": 3, "y": 2, "color": "W" },
+    { "x": 5, "y": 5, "color": "B" }
+  ],
+  "userColor": "B",
+  "goal": "kill",
+  "tags": ["基本", "殺し", "初級"],
+  "root": {
+    "next": {
+      "3,3": {
+        "message": "応手: 白が延びる",
+        "reply": { "x": 3, "y": 4, "color": "W" },
+        "next": {
+          "4,3": {
+            "reply": { "x": 2, "y": 4, "color": "W" },
+            "next": {
+              "4,2": { "correct": true, "message": "眼形を奪って殺し。" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
