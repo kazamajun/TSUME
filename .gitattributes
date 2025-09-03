@@ -1,18 +1,15 @@
-Set-Content -Encoding ascii -Path .gitattributes -Value @'
-# すべてのテキストは LF で管理
 * text=auto eol=lf
 
-# スクリプト類の例
+# scripts
 *.bat eol=crlf
 *.cmd eol=crlf
 *.ps1 eol=crlf
 *.sh  eol=lf
 
-# バイナリは変換しない
+# binaries
 *.png binary
 *.jpg binary
 *.jpeg binary
 *.gif binary
 *.ico binary
 *.pdf binary
-'@
