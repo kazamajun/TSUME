@@ -1,14 +1,8 @@
-cd C:\dev\tsume-mvp
-
-# もし 'gitattributes' という誤名で存在していたら、正しい .gitattributes にリネーム
-if (Test-Path .\gitattributes) { Rename-Item -LiteralPath .\gitattributes -NewName .gitattributes }
-
-# 推奨の .gitattributes を上書き作成
-@"
-# すべてのテキストはLFで管理
+Set-Content -Encoding ascii -Path .gitattributes -Value @'
+# すべてのテキストは LF で管理
 * text=auto eol=lf
 
-# 必要なスクリプト類の例
+# スクリプト類の例
 *.bat eol=crlf
 *.cmd eol=crlf
 *.ps1 eol=crlf
@@ -21,4 +15,4 @@ if (Test-Path .\gitattributes) { Rename-Item -LiteralPath .\gitattributes -NewNa
 *.gif binary
 *.ico binary
 *.pdf binary
-"@ | Out-File -Encoding ascii .gitattributes
+'@
