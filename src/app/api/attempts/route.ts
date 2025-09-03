@@ -1,30 +1,49 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const { deviceId, problemId, solved, moves, wrongMoves, timeMs } = body as {
-    deviceId: string;
-    problemId: string;
-    solved: boolean;
-    moves: number;
-    wrongMoves: number;
-    timeMs: number;
-  };
+export const runtime = 'nodejs';        // Prisma を使うので Node.js 実行
+export const dynamic = 'force-dynamic'; // キャッシュさせない（任意）
 
-  // ユーザー取得 or 作成
-  let user = await prisma.user.findUnique({ where: { deviceId } });
-  if (!user) user = await prisma.user.create({ data: { deviceId } });
+const prisma = new PrismaClient();
 
-  // スコア計算（簡易式）
-  // 基礎点1000 + 時間ボーナス(上限500) - ミス*50 - 手数*5
-  const timeBonus = Math.max(0, 500 - Math.floor(timeMs / 100));
-  const scoreBase = solved ? 1000 : 200;
-  const score = Math.max(0, scoreBase + timeBonus - wrongMoves * 50 - moves * 5);
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
 
-  const attempt = await prisma.attempt.create({
-    data: { userId: user.id, problemId, solved, moves, wrongMoves, timeMs, score }
-  });
+    const deviceId   = String(body.deviceId ?? '').trim();
+    const problemId  = String(body.problemId ?? '').trim();
+    const solved     = Boolean(body.solved ?? false);
 
-  return NextResponse.json({ ok: true, attempt });
+    const toNum = (v: unknown, fallback = 0) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : fallback;
+    };
+
+    const moves      = toNum(body.moves, 0);
+    const wrongMoves = toNum(body.wrongMoves, 0);
+    const timeMs     = toNum(body.timeMs, 0);
+    const score      = toNum(body.score, 0);
+
+    if (!deviceId || !problemId) {
+      return NextResponse.json(
+        { ok: false, error: 'deviceId and problemId are required' },
+        { status: 400 }
+      );
+    }
+
+    // deviceId でユーザーを find-or-create
+    let user = await prisma.user.findUnique({ where: { deviceId } });
+    if (!user) {
+      user = await prisma.user.create({ data: { deviceId } });
+    }
+
+    const attempt = await prisma.attempt.create({
+      data: { userId: user.id, problemId, solved, moves, wrongMoves, timeMs, score },
+    });
+
+    return NextResponse.json({ ok: true, attempt });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ ok: false, error: 'internal_error' }, { status: 500 });
+  }
 }

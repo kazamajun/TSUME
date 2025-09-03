@@ -3,45 +3,38 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Vercel/Neon で長時間クエリやマイグレーションに使う直結URL（.env で DIRECT_URL を設定済みなら有効）
+  directUrl = env("DIRECT_URL")
 }
 
+/**
+ * 既存 API/集計用の最小構成：
+ * - User: deviceId がユニーク。Attempt と 1:N
+ * - Attempt: 問題ID、スコア、時間、手数、ミス手数、正解フラグを保持
+ */
 model User {
-  id        String        @id @default(cuid())
-  deviceId  String        @unique
-  createdAt DateTime      @default(now())
+  id        Int       @id @default(autoincrement())
+  deviceId  String    @unique
   attempts  Attempt[]
-  sessions  GameSession[]
+  createdAt DateTime  @default(now())
+
+  @@index([deviceId])
 }
 
 model Attempt {
-  id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  problemId   String
-  solved      Boolean
-  moves       Int
-  wrongMoves  Int
-  timeMs      Int
-  score       Int
-  createdAt   DateTime @default(now())
-  @@index([problemId, createdAt])
-  @@index([score])
-}
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId  String
+  score      Int      @default(0)
+  timeMs     Int      @default(0)
+  moves      Int      @default(0)  // ← 追加
+  wrongMoves Int      @default(0)  // ← 追加
+  solved     Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
-model GameSession {
-  id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  mode        String
-  tier        String
-  solvedCount Int
-  wrongCount  Int
-  durationMs  Int
-  score       Int
-  createdAt   DateTime @default(now())
-
-  @@index([mode, tier, createdAt])
-  @@index([score])
+  @@index([problemId])
+  @@index([userId, problemId])
 }
